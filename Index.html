@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ND Self-Care Architecture Assessment | Neurodivergent Uprising</title>
+<meta name="description" content="A structural diagnostic for neurodivergent women. Assess your masking load, body connection, and environmental architecture." />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: #FFF8F0; color: #2D2D2D; -webkit-font-smoothing: antialiased; }
+  ::selection { background: #7B2D6E33; }
+  input:focus, textarea:focus { outline: 2px solid #7B2D6E; outline-offset: 2px; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .fadeUp { animation: fadeUp 0.45s ease-out both; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ===== DESIGN SYSTEM =====
+const FONT = "'DM Sans', sans-serif";
+const SERIF = "'Source Serif 4', Georgia, serif";
+const C = {
+  bg: "#FFF8F0",
+  surface: "#FFFFFF",
+  darkBerry: "#4A1942",
+  berry: "#7B2D6E",
+  lightBerry: "#F0E0ED",
+  midBerry: "#C490B8",
+  cream: "#FFF8F0",
+  warmLight: "#FEF0EB",
+  accent: "#D4A574",
+  accentWarm: "#C4553A",
+  text: "#2D2D2D",
+  textMuted: "#6B6B6B",
+  border: "#E8DDD8",
+  green: "#3D7A4A",
+  amber: "#B8860B",
+  red: "#A63D40",
+};
+
+// ===== ASSESSMENT DATA =====
+const MODULE1 = {
+  title: "Masking Load Inventory",
+  subtitle: "What your performance is costing your nervous system",
+  intro: "Masking isn't an emotional problem — it's a structural one. It costs energy your nervous system needs for regulation, connection, and recovery. Let's measure what it's actually costing you.",
+  questions: [
+    {
+      q: "How often do you modify your natural communication style — tone, volume, word choice, facial expressions — to be perceived as acceptable?",
+      opts: [
+        "Almost never — I've found environments where I can be myself",
+        "Sometimes — certain situations require it",
+        "Most of the time — it's automatic at this point",
+        "Nearly always — I'm not sure what my 'natural' style even is"
+      ]
+    },
+    {
+      q: "When someone asks 'how are you?' — can you access an honest answer in real time?",
+      opts: [
+        "Yes — I usually know how I'm feeling",
+        "Sometimes — depends on the day and the person",
+        "Rarely — I default to 'fine' because I genuinely don't know",
+        "Almost never — I answer for the mask, not for me"
+      ]
+    },
+    {
+      q: "In the past month, how often have you felt like you're performing a version of yourself?",
+      opts: [
+        "Rarely — I feel mostly authentic",
+        "A few times a week",
+        "Most days",
+        "It's constant — I'm not sure where the performance ends and I begin"
+      ]
+    },
+    {
+      q: "After social interactions (work, family, errands), how long does it take you to recover?",
+      opts: [
+        "I usually feel fine — no significant recovery needed",
+        "30 minutes to an hour of quiet",
+        "Several hours — I need to be alone and stop functioning",
+        "The rest of the day is gone — sometimes the next day too"
+      ]
+    },
+    {
+      q: "Do you have spaces in your life where you can fully unmask — no performance, no monitoring, no adjusting?",
+      opts: [
+        "Yes — multiple spaces and relationships",
+        "One or two, but they're limited",
+        "I have them in theory but I still monitor myself there",
+        "No — I'm not sure I know how to fully unmask"
+      ]
+    }
+  ]
+};
+
+const MODULE2 = {
+  title: "Body Connection Baseline",
+  subtitle: "How much of your body's data you're actually receiving",
+  intro: "Your body sends signals all day — hunger, pain, fatigue, emotion, stress. Neurodivergent women are often trained to override these signals for social performance. This measures how connected you actually are to your body's data.",
+  questions: [
+    {
+      q: "Can you tell when you're hungry before it becomes urgent — before the shaking, headache, or irritability?",
+      opts: [
+        "Yes — I notice early signals and can act on them",
+        "Sometimes — I catch it about half the time",
+        "Rarely — I usually don't notice until I'm crashing",
+        "Almost never — I forget to eat or only eat when reminded"
+      ]
+    },
+    {
+      q: "Can you tell the difference between anxiety and excitement in your body?",
+      opts: [
+        "Yes — they feel distinctly different",
+        "Sometimes — if I pause and check",
+        "Rarely — they feel like the same activation",
+        "I'm not sure I feel either one clearly"
+      ]
+    },
+    {
+      q: "When you're in physical pain, how long does it typically take you to notice?",
+      opts: [
+        "I notice immediately",
+        "Within an hour or so",
+        "Sometimes not until someone points it out",
+        "I often don't realize until it's severe or I see a bruise"
+      ]
+    },
+    {
+      q: "Right now — can you feel your heartbeat without touching your chest?",
+      opts: [
+        "Yes, easily",
+        "If I concentrate for a moment",
+        "Barely — it takes a lot of effort",
+        "No — I can't feel it at all"
+      ]
+    },
+    {
+      q: "How often do you reach the end of a day and realize you haven't used the bathroom, eaten a full meal, or had water in hours?",
+      opts: [
+        "Rarely — I'm generally aware of my body's needs",
+        "Once or twice a week",
+        "Several times a week",
+        "Most days — I regularly forget basic body maintenance"
+      ]
+    }
+  ]
+};
+
+const MODULE3 = {
+  title: "Environmental Architecture",
+  subtitle: "Six spaces that either support your regulation or sabotage it",
+  intro: "Self-care isn't something you do. It's something your environment either supports or prevents. For each space, tell us what's actually true — not what you wish were true.",
+  questions: [
+    {
+      label: "Sleep",
+      q: "Does your sleep environment actively support regulation — dark, cool, sensory-appropriate, no screens in the wind-down?",
+      opts: [
+        "Yes — I've deliberately designed it",
+        "Partially — some elements are in place",
+        "Not really — I know what to do but haven't changed anything",
+        "It actively works against me"
+      ]
+    },
+    {
+      label: "Workspace",
+      q: "Does your workspace match your sensory needs — lighting, sound, temperature, visual clutter, movement access?",
+      opts: [
+        "Yes — it's designed for my neurology",
+        "Partially — some things work, others are constant friction",
+        "No — I work wherever I can and it costs me",
+        "I don't have a consistent workspace"
+      ]
+    },
+    {
+      label: "Nourishment",
+      q: "Is your food environment set up so eating happens without requiring executive function — visible food, pre-prepared options, low-barrier meals?",
+      opts: [
+        "Yes — eating is mostly automatic because of my setup",
+        "Partially — I have some systems but they require maintenance",
+        "No — every meal requires real-time decision-making and effort",
+        "Food is a constant battle — I forget, can't decide, or feel overwhelmed"
+      ]
+    },
+    {
+      label: "Social",
+      q: "Do your regular social interactions leave you with MORE regulation capacity or LESS?",
+      opts: [
+        "More — my social connections are restorative",
+        "Mixed — some restore, some drain",
+        "Mostly less — social obligations are a net energy loss",
+        "Significantly less — I'm socially depleted most of the time"
+      ]
+    },
+    {
+      label: "Digital",
+      q: "Is your digital environment — phone, email, notifications, social media — designed to protect your attention and energy?",
+      opts: [
+        "Yes — I've deliberately structured it",
+        "Partially — I've made some changes",
+        "No — it's a constant source of overwhelm and drain",
+        "I haven't thought of my digital environment as something I can design"
+      ]
+    },
+    {
+      label: "Transitions",
+      q: "Do you have systems for transitioning between tasks, spaces, or roles — work to home, focus to social, morning to productive?",
+      opts: [
+        "Yes — I have deliberate transition protocols",
+        "Sometimes — when I remember to use them",
+        "No — transitions are a major friction point and I push through",
+        "Transitions are where everything falls apart"
+      ]
+    }
+  ]
+};
+
+// ===== SCORING =====
+function scoreModule(answers, qCount) {
+  let total = 0;
+  for (let i = 0; i < qCount; i++) total += (answers[i] || 0);
+  return total;
+}
+
+function getLevel(score, max) {
+  const pct = score / max;
+  if (pct <= 0.33) return { label: "Functional", color: C.green, icon: "◈" };
+  if (pct <= 0.66) return { label: "Strained", color: C.amber, icon: "◆" };
+  return { label: "Fragile", color: C.red, icon: "◉" };
+}
+
+function getMaskingSummary(score) {
+  if (score <= 4) return "Your identity architecture has some protection. You've found spaces where the mask can come down. The energy cost is manageable — but watch for slow creep.";
+  if (score <= 9) return "Significant energy is being redirected from regulation to performance. Your nervous system is funding the mask at the expense of recovery, connection, and self-knowledge.";
+  return "Your nervous system is spending most of its capacity on performance. The mask has become load-bearing — it's hard to tell where performance ends and you begin. This is not a willpower issue. It's architecture.";
+}
+
+function getInteroSummary(score) {
+  if (score <= 4) return "You're reading most of your body's signals. The data channel is open. Your regulation system has input to work with.";
+  if (score <= 9) return "Some signals are getting through, others are lost. Hunger, pain, and emotional states may go unnoticed until they're urgent. Your body is sending data — but the receiver is intermittent.";
+  return "Your body is sending data you're not receiving. Years of overriding signals for social performance have weakened the channel. This isn't damage — it's disuse. Interoception rebuilds, but it requires deliberate practice.";
+}
+
+function getEnvSummary(score) {
+  if (score <= 5) return "Your spaces are mostly working for you. The environmental load is low enough that your nervous system has capacity for regulation.";
+  if (score <= 11) return "Some spaces support you, others are actively draining you. Every fragile space is a tax on your regulation capacity — even when you're not conscious of it.";
+  return "Your environment is working against your nervous system. The architecture around you is consuming capacity before you even begin the day. This is where subtraction starts.";
+}
+
+// ===== COMPONENTS =====
+function Header({ step, totalSteps }) {
+  const steps = ["Masking Load", "Body Connection", "Your Spaces", "Your Results"];
+  if (step < 0) return null;
+  return (
+    <div style={{ background: C.darkBerry, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.midBerry, letterSpacing: "2px", textTransform: "uppercase" }}>NDU</div>
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{
+              width: i <= step ? "auto" : "8px", height: "8px",
+              padding: i <= step ? "2px 10px" : "0",
+              borderRadius: "100px",
+              background: i <= step ? C.berry : C.midBerry + "44",
+              fontSize: "10px", fontFamily: FONT, fontWeight: 600,
+              color: i <= step ? "#fff" : "transparent",
+              display: "flex", alignItems: "center",
+              transition: "all 0.3s ease"
+            }}>{i <= step ? s : ""}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Wrap({ children }) {
+  return <div style={{ maxWidth: "680px", margin: "0 auto", padding: "0 20px 60px" }}>{children}</div>;
+}
+
+function QuestionCard({ number, total, question, label, options, selected, onSelect }) {
+  return (
+    <div className="fadeUp" style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "28px", marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        {label && <span style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "1.5px", textTransform: "uppercase", background: C.lightBerry, padding: "4px 12px", borderRadius: "100px" }}>{label}</span>}
+        <span style={{ fontFamily: FONT, fontSize: "12px", color: C.textMuted }}>{number}/{total}</span>
+      </div>
+      <p style={{ fontFamily: SERIF, fontSize: "17px", lineHeight: 1.6, color: C.text, marginBottom: "20px", fontWeight: 400 }}>{question}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {options.map((opt, i) => (
+          <button key={i} onClick={() => onSelect(i)} style={{
+            width: "100%", textAlign: "left", padding: "14px 18px",
+            borderRadius: "10px",
+            border: selected === i ? "2px solid " + C.berry : "1.5px solid " + C.border,
+            background: selected === i ? C.lightBerry : C.surface,
+            fontFamily: FONT, fontSize: "14px", lineHeight: 1.5,
+            color: selected === i ? C.darkBerry : C.text,
+            fontWeight: selected === i ? 600 : 400,
+            cursor: "pointer",
+            transition: "all 0.2s ease"
+          }}>{opt}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScoreBar({ label, score, max, level }) {
+  const pct = Math.round((score / max) * 100);
+  return (
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "8px" }}>
+        <span style={{ fontFamily: FONT, fontSize: "14px", fontWeight: 600, color: C.text }}>{label}</span>
+        <span style={{ fontFamily: FONT, fontSize: "13px", fontWeight: 700, color: level.color }}>{level.icon} {level.label}</span>
+      </div>
+      <div style={{ width: "100%", height: "10px", background: C.border, borderRadius: "100px", overflow: "hidden" }}>
+        <div style={{ width: pct + "%", height: "100%", background: level.color, borderRadius: "100px", transition: "width 0.8s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function Btn({ children, onClick, primary, disabled, small, full }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      padding: small ? "10px 20px" : "14px 28px",
+      borderRadius: "10px",
+      border: primary ? "none" : "1.5px solid " + C.border,
+      background: disabled ? C.border : primary ? C.berry : C.surface,
+      color: disabled ? C.textMuted : primary ? "#fff" : C.text,
+      fontFamily: FONT, fontSize: small ? "13px" : "15px",
+      fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer",
+      width: full ? "100%" : "auto",
+      boxShadow: primary && !disabled ? "0 2px 12px " + C.berry + "33" : "none",
+      transition: "all 0.2s ease"
+    }}>{children}</button>
+  );
+}
+
+function Footer() {
+  return (
+    <div style={{ textAlign: "center", padding: "40px 20px 20px", borderTop: "1px solid " + C.border, marginTop: "40px" }}>
+      <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2px", marginBottom: "4px" }}>NEURODIVERGENT UPRISING</div>
+      <div style={{ fontFamily: FONT, fontSize: "12px", color: C.textMuted }}>Research-backed counter-architecture for neurodivergent lives</div>
+      <div style={{ fontFamily: FONT, fontSize: "11px", color: C.textMuted, marginTop: "8px" }}>
+        <a href="https://neurodivergentuprising.com" style={{ color: C.berry, textDecoration: "none" }}>neurodivergentuprising.com</a>
+      </div>
+    </div>
+  );
+}
+
+// ===== MAIN APP =====
+function App() {
+  const [step, setStep] = useState(-1); // -1=welcome, 0=mod1, 1=mod2, 2=mod3, 3=free results, 4=email gate, 5=paid results
+  const [m1, setM1] = useState({});
+  const [m2, setM2] = useState({});
+  const [m3, setM3] = useState({});
+  const [emailGate, setEmailGate] = useState({ email: "", firstName: "", submitting: false, error: "", done: false });
+  const topRef = useRef(null);
+
+  const go = (s) => { setStep(s); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+  // Scores
+  const s1 = scoreModule(m1, 5);
+  const s2 = scoreModule(m2, 5);
+  const s3 = scoreModule(m3, 6);
+  const l1 = getLevel(s1, 15);
+  const l2 = getLevel(s2, 15);
+  const l3 = getLevel(s3, 18);
+  const totalScore = s1 + s2 + s3;
+  const totalMax = 48;
+  const overallLevel = getLevel(totalScore, totalMax);
+
+  // ===== WELCOME =====
+  if (step === -1) return (
+    <div style={{ minHeight: "100vh", background: C.bg }}>
+      <div style={{ background: C.darkBerry, padding: "14px 20px" }}>
+        <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.midBerry, letterSpacing: "2px", textTransform: "uppercase" }}>NEURODIVERGENT UPRISING</div>
+      </div>
+      <Wrap>
+        <div className="fadeUp" style={{ textAlign: "center", paddingTop: "60px" }}>
+          <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2.5px", textTransform: "uppercase", marginBottom: "16px" }}>STRUCTURAL DIAGNOSTIC</div>
+          <h1 style={{ fontFamily: SERIF, fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 700, color: C.darkBerry, lineHeight: 1.2, marginBottom: "20px" }}>
+            Your Self-Care<br />Architecture Assessment
+          </h1>
+          <p style={{ fontFamily: SERIF, fontSize: "18px", color: C.text, lineHeight: 1.7, maxWidth: "500px", margin: "0 auto 32px", fontStyle: "italic", fontWeight: 300 }}>
+            This isn't a wellness quiz.<br />It's a structural diagnostic.
+          </p>
+        </div>
+
+        <div style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "32px", marginBottom: "32px" }}>
+          <p style={{ fontFamily: FONT, fontSize: "15px", lineHeight: 1.8, color: C.text, marginBottom: "20px" }}>
+            Every self-care failure has a design problem underneath it. Your bubble baths aren't failing because you lack discipline. They're failing because they were designed for a nervous system you don't have.
+          </p>
+          <p style={{ fontFamily: FONT, fontSize: "15px", lineHeight: 1.8, color: C.text, marginBottom: "20px" }}>
+            This assessment maps your architecture across three layers:
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "20px" }}>
+            {[
+              ["Masking Load", "What your performance is costing your nervous system"],
+              ["Body Connection", "How much of your body's data you're actually receiving"],
+              ["Environmental Architecture", "Six spaces that either support regulation or sabotage it"]
+            ].map(([title, desc], i) => (
+              <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: C.lightBerry, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, fontSize: "13px", fontWeight: 700, color: C.berry, flexShrink: 0, marginTop: "2px" }}>{i + 1}</div>
+                <div>
+                  <div style={{ fontFamily: FONT, fontSize: "14px", fontWeight: 600, color: C.darkBerry }}>{title}</div>
+                  <div style={{ fontFamily: FONT, fontSize: "13px", color: C.textMuted, lineHeight: 1.5 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontFamily: FONT, fontSize: "13px", color: C.textMuted, lineHeight: 1.6 }}>
+            Takes 10–12 minutes. Your results are specific to your neurology, not a generic wellness score.
+          </p>
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <Btn primary onClick={() => go(0)}>Begin Assessment</Btn>
+        </div>
+        <Footer />
+      </Wrap>
+    </div>
+  );
+
+  // ===== MODULE 1: MASKING =====
+  if (step === 0) return (
+    <div style={{ minHeight: "100vh", background: C.bg }}>
+      <Header step={0} />
+      <Wrap>
+        <div style={{ padding: "32px 0 20px" }}>
+          <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px" }}>MODULE 1</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 700, color: C.darkBerry, marginBottom: "6px" }}>{MODULE1.title}</h2>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.textMuted, marginBottom: "20px" }}>{MODULE1.subtitle}</p>
+          <div style={{ background: C.lightBerry, borderRadius: "12px", padding: "20px", marginBottom: "28px" }}>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.darkBerry, lineHeight: 1.7 }}>{MODULE1.intro}</p>
+          </div>
+        </div>
+        {MODULE1.questions.map((q, i) => (
+          <QuestionCard key={i} number={i + 1} total={5} question={q.q} options={q.opts} selected={m1[i]} onSelect={v => setM1(p => ({...p, [i]: v}))} />
+        ))}
+        <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: "12px" }}>
+          <Btn primary onClick={() => go(1)} disabled={Object.keys(m1).length < 5}>Continue to Body Connection →</Btn>
+        </div>
+        <Footer />
+      </Wrap>
+    </div>
+  );
+
+  // ===== MODULE 2: INTEROCEPTION =====
+  if (step === 1) return (
+    <div style={{ minHeight: "100vh", background: C.bg }}>
+      <Header step={1} />
+      <Wrap>
+        <div style={{ padding: "32px 0 20px" }}>
+          <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px" }}>MODULE 2</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 700, color: C.darkBerry, marginBottom: "6px" }}>{MODULE2.title}</h2>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.textMuted, marginBottom: "20px" }}>{MODULE2.subtitle}</p>
+          <div style={{ background: C.lightBerry, borderRadius: "12px", padding: "20px", marginBottom: "28px" }}>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.darkBerry, lineHeight: 1.7 }}>{MODULE2.intro}</p>
+          </div>
+        </div>
+        {MODULE2.questions.map((q, i) => (
+          <QuestionCard key={i} number={i + 1} total={5} question={q.q} options={q.opts} selected={m2[i]} onSelect={v => setM2(p => ({...p, [i]: v}))} />
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "12px" }}>
+          <Btn onClick={() => go(0)}>← Back</Btn>
+          <Btn primary onClick={() => go(2)} disabled={Object.keys(m2).length < 5}>Continue to Your Spaces →</Btn>
+        </div>
+        <Footer />
+      </Wrap>
+    </div>
+  );
+
+  // ===== MODULE 3: ENVIRONMENT =====
+  if (step === 2) return (
+    <div style={{ minHeight: "100vh", background: C.bg }}>
+      <Header step={2} />
+      <Wrap>
+        <div style={{ padding: "32px 0 20px" }}>
+          <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px" }}>MODULE 3</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: "26px", fontWeight: 700, color: C.darkBerry, marginBottom: "6px" }}>{MODULE3.title}</h2>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.textMuted, marginBottom: "20px" }}>{MODULE3.subtitle}</p>
+          <div style={{ background: C.lightBerry, borderRadius: "12px", padding: "20px", marginBottom: "28px" }}>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.darkBerry, lineHeight: 1.7 }}>{MODULE3.intro}</p>
+          </div>
+        </div>
+        {MODULE3.questions.map((q, i) => (
+          <QuestionCard key={i} number={i + 1} total={6} question={q.q} label={q.label} options={q.opts} selected={m3[i]} onSelect={v => setM3(p => ({...p, [i]: v}))} />
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "12px" }}>
+          <Btn onClick={() => go(1)}>← Back</Btn>
+          <Btn primary onClick={() => go(3)} disabled={Object.keys(m3).length < 6}>See Your Results →</Btn>
+        </div>
+        <Footer />
+      </Wrap>
+    </div>
+  );
+
+  // ===== FREE RESULTS =====
+  if (step === 3) return (
+    <div style={{ minHeight: "100vh", background: C.bg }}>
+      <Header step={3} />
+      <Wrap>
+        <div className="fadeUp" style={{ textAlign: "center", padding: "40px 0 32px" }}>
+          <div style={{ fontFamily: FONT, fontSize: "11px", fontWeight: 700, color: C.berry, letterSpacing: "2px", textTransform: "uppercase", marginBottom: "12px" }}>YOUR ASSESSMENT RESULTS</div>
+          <h2 style={{ fontFamily: SERIF, fontSize: "28px", fontWeight: 700, color: C.darkBerry, marginBottom: "8px" }}>Your Architecture Is {overallLevel.label}</h2>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.textMuted }}>Here's what we found across your three layers.</p>
+        </div>
+
+        {/* Score Summary */}
+        <div style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "28px", marginBottom: "24px" }}>
+          <ScoreBar label="Masking Load" score={s1} max={15} level={l1} />
+          <ScoreBar label="Body Connection" score={s2} max={15} level={l2} />
+          <ScoreBar label="Environmental Architecture" score={s3} max={18} level={l3} />
+        </div>
+
+        {/* Module Summaries */}
+        <div style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "28px", marginBottom: "24px" }}>
+          <h3 style={{ fontFamily: FONT, fontSize: "13px", fontWeight: 700, color: C.berry, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "16px" }}>What This Means</h3>
+
+          <div style={{ marginBottom: "20px" }}>
+            <div style={{ fontFamily: FONT, fontSize: "15px", fontWeight: 600, color: C.darkBerry, marginBottom: "6px" }}>Masking Load — {l1.label}</div>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.text, lineHeight: 1.7 }}>{getMaskingSummary(s1)}</p>
+          </div>
+
+          <div style={{ borderTop: "1px solid " + C.border, paddingTop: "20px", marginBottom: "20px" }}>
+            <div style={{ fontFamily: FONT, fontSize: "15px", fontWeight: 600, color: C.darkBerry, marginBottom: "6px" }}>Body Connection — {l2.label}</div>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.text, lineHeight: 1.7 }}>{getInteroSummary(s2)}</p>
+          </div>
+
+          <div style={{ borderTop: "1px solid " + C.border, paddingTop: "20px" }}>
+            <div style={{ fontFamily: FONT, fontSize: "15px", fontWeight: 600, color: C.darkBerry, marginBottom: "6px" }}>Environmental Architecture — {l3.label}</div>
+            <p style={{ fontFamily: FONT, fontSize: "14px", color: C.text, lineHeight: 1.7 }}>{getEnvSummary(s3)}</p>
+          </div>
+        </div>
+
+        {/* Space-by-space breakdown (free teaser) */}
+        <div style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "28px", marginBottom: "24px" }}>
+          <h3 style={{ fontFamily: FONT, fontSize: "13px", fontWeight: 700, color: C.berry, letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "16px" }}>Your Six Spaces</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            {MODULE3.questions.map((q, i) => {
+              const spaceLevel = m3[i] <= 0 ? { label: "Strong", color: C.green } : m3[i] <= 1 ? { label: "Partial", color: C.amber } : { label: "Fragile", color: C.red };
+              return (
+                <div key={i} style={{ background: C.bg, border: "1px solid " + C.border, borderRadius: "10px", padding: "16px", textAlign: "center" }}>
+                  <div style={{ fontFamily: FONT, fontSize: "13px", fontWeight: 600, color: C.darkBerry, marginBottom: "4px" }}>{q.label}</div>
+                  <div style={{ fontFamily: FONT, fontSize: "12px", fontWeight: 700, color: spaceLevel.color }}>{spaceLevel.label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Upgrade CTA */}
+        <div style={{ background: "linear-gradient(135deg, " + C.darkBerry + ", " + C.berry + ")", borderRadius: "16px", padding: "32px", textAlign: "center", marginBottom: "24px" }}>
+          <div style={{ fontSize: "32px", marginBottom: "12px" }}>🔓</div>
+          <h3 style={{ fontFamily: SERIF, fontSize: "22px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>Unlock Your Full Action Plan</h3>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.midBerry, lineHeight: 1.7, marginBottom: "8px" }}>Your free results show you what's broken. The full plan shows you exactly what to subtract — and in what order.</p>
+          <div style={{ fontFamily: FONT, fontSize: "13px", color: C.lightBerry, lineHeight: 1.8, marginBottom: "24px", textAlign: "left", maxWidth: "380px", margin: "0 auto 24px" }}>
+            ✓ Your personalized subtraction protocol<br/>
+            ✓ 8-week interoception rebuild sequence<br/>
+            ✓ Identity recovery starting point<br/>
+            ✓ Environmental redesign priorities by space<br/>
+            ✓ The full Self-Care Architecture framework applied to YOUR results
+          </div>
+          {/* PLACEHOLDER — Replace with your Lemon Squeezy URL */}
+          <a href="https://REPLACE-WITH-LEMONSQUEEZY-CHECKOUT-URL.com" target="_blank" rel="noopener" style={{
+            display: "inline-block", padding: "16px 40px", borderRadius: "10px",
+            background: "#fff", color: C.darkBerry,
+            fontFamily: FONT, fontSize: "16px", fontWeight: 700,
+            textDecoration: "none",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+          }}>
+            Unlock Full Results — $19
+          </a>
+          <div style={{ fontFamily: FONT, fontSize: "12px", color: C.midBerry, marginTop: "12px" }}>Instant access. Includes the complete ND Self-Care Architecture Guide.</div>
+        </div>
+
+        {/* Email capture (free — captures everyone) */}
+        <div style={{ background: C.surface, border: "1px solid " + C.border, borderRadius: "16px", padding: "28px", marginBottom: "24px" }}>
+          {emailGate.done ? (
+            <div className="fadeUp" style={{ textAlign: "center", padding: "20px 0" }}>
+              <div style={{ fontSize: "32px", marginBottom: "12px" }}>✓</div>
+              <div style={{ fontFamily: FONT, fontSize: "16px", fontWeight: 600, color: C.green }}>You're in.</div>
+              <p style={{ fontFamily: FONT, fontSize: "14px", color: C.textMuted, marginTop: "8px" }}>We'll send you resources matched to your results.</p>
+            </div>
+          ) : (
+            <>
+              <h3 style={{ fontFamily: FONT, fontSize: "15px", fontWeight: 600, color: C.darkBerry, marginBottom: "4px" }}>Save your results + get matched resources</h3>
+              <p style={{ fontFamily: FONT, fontSize: "13px", color: C.textMuted, marginBottom: "20px", lineHeight: 1.5 }}>
+                We'll email you a summary of your results and send you research-backed tools matched to your specific architecture. No spam. Unsubscribe anytime.
+              </p>
+              <div style={{ marginBottom: "14px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: C.text, marginBottom: "6px", fontFamily: FONT }}>First Name</label>
+                <input type="text" value={emailGate.firstName} onChange={e => setEmailGate(g => ({...g, firstName: e.target.value}))}
+                  placeholder="Your first name"
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: "8px", border: "1.5px solid " + C.border, background: C.bg, fontFamily: FONT, fontSize: "14px", color: C.text, boxSizing: "border-box" }} />
+              </div>
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: C.text, marginBottom: "6px", fontFamily: FONT }}>Email Address</label>
+                <input type="email" value={emailGate.email} onChange={e => setEmailGate(g => ({...g, email: e.target.value, error: ""}))}
+                  placeholder="you@email.com"
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: "8px", border: "1.5px solid " + (emailGate.error ? C.red : C.border), background: C.bg, fontFamily: FONT, fontSize: "14px", color: C.text, boxSizing: "border-box" }} />
+                {emailGate.error && <div style={{ color: C.red, fontSize: "12px", marginTop: "6px", fontFamily: FONT }}>{emailGate.error}</div>}
+              </div>
+              <button onClick={async () => {
+                if (!emailGate.email || !emailGate.email.includes("@")) {
+                  setEmailGate(g => ({...g, error: "Please enter a valid email address."}));
+                  return;
+                }
+                setEmailGate(g => ({...g, submitting: true, error: ""}));
+                try {
+                  const fragileSpaces = MODULE3.questions.filter((q, i) => m3[i] >= 2).map(q => q.label).join(", ");
+                  const resp = await fetch("https://api.convertkit.com/v3/forms/9135692/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      api_key: "5IStEe1bSBePuVK8zOuOkw",
+                      email: emailGate.email,
+                      first_name: emailGate.firstName,
+                      fields: {
+                        source: "architecture-assessment",
+                        lane: "women",
+                        tool_used: "selfcare_architecture_assessment",
+                        masking_score: String(s1),
+                        masking_level: l1.label,
+                        interoception_score: String(s2),
+                        interoception_level: l2.label,
+                        environment_score: String(s3),
+                        environment_level: l3.label,
+                        overall_level: overallLevel.label,
+                        fragile_spaces: fragileSpaces || "none",
+                      },
+                    }),
+                  });
+                  const data = await resp.json();
+                  if (data.error) {
+                    setEmailGate(g => ({...g, submitting: false, error: data.message || "Something went wrong."}));
+                  } else {
+                    setEmailGate(g => ({...g, submitting: false, done: true}));
+                  }
+                } catch (err) {
+                  setEmailGate(g => ({...g, submitting: false, error: "Connection error. Please try again."}));
+                }
+              }} disabled={emailGate.submitting} style={{
+                width: "100%", padding: "14px", borderRadius: "10px", border: "none",
+                background: emailGate.submitting ? C.border : C.berry,
+                color: emailGate.submitting ? C.textMuted : "#fff",
+                fontSize: "15px", fontWeight: 700, fontFamily: FONT,
+                cursor: emailGate.submitting ? "not-allowed" : "pointer",
+                boxShadow: emailGate.submitting ? "none" : "0 2px 12px " + C.berry + "33",
+              }}>
+                {emailGate.submitting ? "Saving..." : "Save My Results"}
+              </button>
+              <div style={{ fontSize: "11px", color: C.textMuted, textAlign: "center", marginTop: "10px", fontFamily: FONT }}>No spam. Your data stays with NDU.</div>
+            </>
+          )}
+        </div>
+
+        {/* Consult CTA */}
+        <div style={{ background: C.warmLight, border: "1px solid #F5D0C5", borderRadius: "16px", padding: "28px", textAlign: "center", marginBottom: "24px" }}>
+          <h3 style={{ fontFamily: SERIF, fontSize: "18px", fontWeight: 600, color: C.darkBerry, marginBottom: "8px" }}>Want to rebuild your architecture with support?</h3>
+          <p style={{ fontFamily: FONT, fontSize: "14px", color: C.text, lineHeight: 1.6, marginBottom: "16px" }}>
+            NDU offers 1:1 consulting for neurodivergent women who need structural redesign — not more self-help advice.
+          </p>
+          <a href="https://calendly.com/iepspeakup/45" target="_blank" rel="noopener" style={{
+            display: "inline-block", padding: "12px 28px", borderRadius: "10px",
+            border: "1.5px solid " + C.accentWarm, background: "transparent",
+            color: C.accentWarm, fontFamily: FONT, fontSize: "14px", fontWeight: 600,
+            textDecoration: "none"
+          }}>Book a Discovery Call</a>
+        </div>
+
+        <Footer />
+      </Wrap>
+    </div>
+  );
+
+  return null;
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
